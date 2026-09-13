@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SmartPatientCareEvent",
+  "description": "Standardized event schema for SmartPatientCare system events and telemetry",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Unique identifier for the event"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of the event"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Category or type of event (e.g., VITAL_SIGN, FALL_DETECTED, DRIP_EMPTY, VENTILATOR_ALERT)"
+    },
+    "patient_id": {
+      "type": "string",
+      "description": "Patient identifier (e.g., P001)"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Room identifier (e.g., ROOM101)"
+    },
+    "source": {
+      "type": "string",
+      "description": "Originating source of the event (e.g., cv_monitor, device_simulator, drip_sensor, ventilator_monitor)"
+    },
+    "parameter": {
+      "type": "string",
+      "description": "Specific monitored parameter (e.g., heart_rate, spo2, drip_rate, fall_state)"
+    },
+    "value": {
+      "description": "Current reading or parameter value",
+      "type": ["number", "string", "boolean", "null"]
+    },
+    "unit": {
+      "type": "string",
+      "description": "Measurement unit (e.g., bpm, %, ml/h, status)"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["INFO", "WARNING", "CRITICAL"],
+      "description": "Severity level of the event"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable summary or message describing the event"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACTIVE", "ACKNOWLEDGED", "RESOLVED"],
+      "description": "Current lifecycle status of the event or alert"
+    }
+  },
+  "required": [
+    "event_id",
+    "timestamp",
+    "event_type",
+    "patient_id",
+    "room_id",
+    "source",
+    "parameter",
+    "value",
+    "unit",
+    "severity",
+    "message",
+    "status"
+  ],
+  "additionalProperties": false
+}
