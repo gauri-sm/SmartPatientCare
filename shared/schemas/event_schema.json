@@ -54,6 +54,18 @@
       "type": "string",
       "enum": ["ACTIVE", "ACKNOWLEDGED", "RESOLVED"],
       "description": "Current lifecycle status of the event or alert"
+    },
+    "video_source": {
+      "type": "string",
+      "description": "Optional URI or relative path to CCTV video evidence clip"
+    },
+    "camera_id": {
+      "type": "string",
+      "description": "Optional CCTV camera identifier (e.g. CAM101)"
+    },
+    "evidence_type": {
+      "type": "string",
+      "description": "Optional evidence type (e.g. CCTV_VIDEO, SNAPSHOT)"
     }
   },
   "required": [

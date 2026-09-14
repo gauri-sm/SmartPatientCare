@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartPatientCare | Nursing Station Dashboard & CCTV Evidence</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ====================================================================
+       1. Header
+       ==================================================================== -->
+  <header class="header">
+    <div class="brand-section">
+      <div class="brand-logo">🏥</div>
+      <div>
+        <div style="display: flex; align-items: center;">
+          <span class="brand-title">SmartPatientCare</span>
+          <span class="brand-subtitle">Nursing Station</span>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted);">Central ICU & Ward Surveillance Console</div>
+      </div>
+    </div>
+
+    <div class="system-status-pill">
+      <span id="connStatusBadge" class="status-dot dot-mock"></span>
+      <span id="connStatusText">Connecting...</span>
+    </div>
+
+    <div class="header-right">
+      <div id="totalActiveAlertCount" class="alert-counter-top">0 Active</div>
+      <div class="clock-widget">
+        <div id="liveClock" class="clock-time">00:00:00</div>
+        <div id="liveDate" class="clock-date">Mon, Sep 14, 2026</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====================================================================
+       Hackathon Interactive Demonstration Toolbar
+       ==================================================================== -->
+  <aside class="demo-bar">
+    <div class="demo-bar-label">
+      <span>⚡ Quick Demo Triggers:</span>
+    </div>
+    <div class="demo-actions">
+      <button id="demoFallBtn" class="btn-control btn-trigger-fall" title="Simulate CV Fall Detection in Room 101">🚨 Trigger CV Fall (R101)</button>
+      <button id="demoLeftBedBtn" class="btn-control" title="Simulate Patient Vacating Bed in Room 103">⚠️ Trigger CV Left Bed (R103)</button>
+      <button id="demoCvPosBtn" class="btn-control" title="Simulate CV Unusual Posture in Room 101">⚠️ Trigger CV Position (R101)</button>
+      <button id="demoVentBtn" class="btn-control" title="Simulate Ventilator Disconnect Alarm">💨 Ventilator Alarm (R102)</button>
+      <button id="demoTachyBtn" class="btn-control" title="Simulate Tachycardia Arrhythmia Spike">❤️ Tachycardia (R104)</button>
+      <button id="toggleCctvBtn" class="btn-control" title="Open or Close CCTV Evidence Panel">📹 Toggle CCTV Panel</button>
+      <button id="toggleSimBtn" class="btn-control btn-active" title="Toggle autonomous hospital telemetry generator">Auto-Sim: ON</button>
+    </div>
+  </aside>
+
+  <!-- ====================================================================
+       Main Workspace
+       ==================================================================== -->
+  <main class="main-container">
+
+    <!-- 2 & 3. Patient Overview Cards (P001 - P004) -->
+    <section>
+      <div class="section-title">
+        <span>Ward Patients Overview</span>
+        <span style="font-size: 11px; color: var(--text-muted); font-weight: 400;">(Click card to view live telemetry and room CCTV)</span>
+      </div>
+      <div id="patientGrid" class="patient-grid">
+        <!-- Rendered dynamically by dashboard.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         12. CCTV EVENT EVIDENCE PANEL (Auto-opens on Critical Events)
+         ==================================================================== -->
+    <section id="cctvEvidencePanel" class="cctv-panel collapsed">
+      <div class="cctv-header">
+        <div class="cctv-header-left">
+          <div class="cctv-rec-dot"></div>
+          <div>
+            <span class="cctv-title">LIVE CCTV / EVENT EVIDENCE</span>
+            <span class="cctv-demo-label">CCTV DEMO VIDEO</span>
+          </div>
+        </div>
+        <div class="cctv-header-center">
+          <span id="cctvCamBadge" class="cctv-cam-tag">CAM101 • ROOM101 (P001)</span>
+          <span id="cctvSeverityBadge" class="badge-sev badge-critical">CRITICAL</span>
+        </div>
+        <div class="cctv-header-right">
+          <button id="cctvMinimizeBtn" class="btn-cctv-action" title="Minimize/Collapse CCTV Panel">Hide CCTV</button>
+        </div>
+      </div>
+
+      <div class="cctv-body">
+        <div class="cctv-video-wrapper">
+          <video id="cctvVideoPlayer" class="cctv-video" controls autoplay muted loop playsinline preload="auto">
+            <source id="cctvVideoSource" src="videos/room101.mp4" type="video/mp4">
+            Your browser does not support HTML5 video streaming.
+          </video>
+          <div class="cctv-video-overlay-tag">
+            <span id="cctvOverlayCamera">CAM101</span> | <span id="cctvOverlayStatus">CRITICAL EVENT EVIDENCE</span>
+          </div>
+        </div>
+
+        <div class="cctv-details-card">
+          <div class="cctv-details-top">
+            <div class="cctv-detail-row">
+              <span class="cctv-detail-label">Patient:</span>
+              <strong id="cctvPatientName" class="cctv-detail-val">P001 - Eleanor Vance</strong>
+            </div>
+            <div class="cctv-detail-row">
+              <span class="cctv-detail-label">Location:</span>
+              <strong id="cctvRoomLocation" class="cctv-detail-val">ROOM 101</strong>
+            </div>
+            <div class="cctv-detail-row">
+              <span class="cctv-detail-label">Triggered Event:</span>
+              <span id="cctvEventType" class="cctv-event-badge">FALL DETECTED</span>
+            </div>
+            <div class="cctv-detail-row">
+              <span class="cctv-detail-label">Incident Time:</span>
+              <span id="cctvIncidentTime" class="cctv-time-mono">19:30:00</span>
+            </div>
+          </div>
+
+          <div class="cctv-message-box">
+            <div class="cctv-msg-header">Surveillance Telemetry:</div>
+            <div id="cctvEventMessage" class="cctv-msg-text">
+              CRITICAL: Computer vision detected patient fall in ROOM101!
+            </div>
+          </div>
+
+          <div class="cctv-actions-footer">
+            <button id="cctvAckBtn" class="btn-ack" style="padding: 7px 14px; font-size: 11px;">Acknowledge Alert</button>
+            <button id="cctvResolveBtn" class="btn-resolve" style="padding: 7px 14px; font-size: 11px;">Resolve Alert</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detailed Workspace: Selected Patient Monitor vs Real-Time Alert Panel -->
+    <section class="workspace-grid">
+
+      <!-- 6, 7 & 9. Selected Patient Vital Monitoring & CV Display -->
+      <div class="patient-monitor-card">
+        <div class="monitor-patient-header">
+          <div>
+            <div id="selPatientName" class="patient-full-name">Eleanor Vance (72y, Female)</div>
+            <div id="selPatientMeta" class="patient-full-meta">P001 • ROOM101 • Post-operative Hip Replacement</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="selPatientCctvBtn" class="btn-control" style="font-size: 11px; padding: 4px 8px;" title="Stream CCTV for this patient">📹 Stream CCTV</button>
+            <span id="selPatientStatus" class="patient-status-badge badge-normal">NORMAL</span>
+          </div>
+        </div>
+
+        <!-- Real-Time ECG Oscilloscope Waveform -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Real-Time ECG Waveform</span>
+            <span style="font-size: 10px; color: #00ff88; font-family: var(--font-mono);">Lead II • 25 mm/s</span>
+          </div>
+          <div class="ecg-container">
+            <div class="ecg-overlay">
+              <span class="ecg-lead">ECG LEAD II</span>
+              <span class="ecg-gain">10 mm/mV</span>
+            </div>
+            <canvas id="ecgCanvas" class="ecg-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Numerical Vital Signs Grid -->
+        <div class="vitals-main-grid">
+          <div class="vital-box">
+            <div class="vital-box-label">
+              <span>Heart Rate</span>
+              <span class="heart-beat-icon">❤️</span>
+            </div>
+            <div id="selHeartRate" class="vital-box-value">74</div>
+            <div class="vital-box-unit">bpm</div>
+          </div>
+
+          <div class="vital-box">
+            <div class="vital-box-label">
+              <span>SpO2</span>
+              <span>🫁</span>
+            </div>
+            <div id="selSpo2" class="vital-box-value">97</div>
+            <div class="vital-box-unit">% (Pulse Ox)</div>
+          </div>
+
+          <div class="vital-box">
+            <div class="vital-box-label">
+              <span>Blood Pressure</span>
+              <span>🩺</span>
+            </div>
+            <div id="selBp" class="vital-box-value" style="font-size: 20px;">125/80</div>
+            <div class="vital-box-unit">mmHg (NIBP)</div>
+          </div>
+
+          <div class="vital-box">
+            <div class="vital-box-label">
+              <span>Resp Rate</span>
+              <span>💨</span>
+            </div>
+            <div id="selRespRate" class="vital-box-value">16</div>
+            <div class="vital-box-unit">rpm</div>
+          </div>
+
+          <div class="vital-box">
+            <div class="vital-box-label">
+              <span>Temperature</span>
+              <span>🌡️</span>
+            </div>
+            <div id="selTemp" class="vital-box-value" style="font-size: 20px;">36.8°C</div>
+            <div class="vital-box-unit">Celsius</div>
+          </div>
+        </div>
+
+        <!-- Split Aux Panels: IV Drip & Computer Vision Status -->
+        <div class="aux-panels-grid">
+
+          <!-- 7. IV Drip Status Monitor -->
+          <div class="aux-panel">
+            <div class="aux-panel-title">
+              <span>💧 IV Drip Infusion Monitor</span>
+            </div>
+            <div class="drip-monitor-widget">
+              <div class="drip-bag-graphic">
+                <div id="selDripFill" class="drip-bag-fill" style="height: 65%;"></div>
+              </div>
+              <div class="drip-meta">
+                <div>Status: <span id="selDripStatus" class="drip-val drip-normal">Normal</span></div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Rate: <strong id="selDripRate" style="color: #ffffff;">100 ml/hr</strong></div>
+                <div style="font-size: 11px; color: var(--text-muted);">Remaining: <strong id="selDripPercent">65%</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 9. Computer Vision Surveillance Monitor -->
+          <div class="aux-panel">
+            <div class="aux-panel-title">
+              <span>👁️ Computer Vision Surveillance</span>
+            </div>
+            <div class="cv-monitor-widget">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="selCvStatusBadge" class="cv-badge badge-cv-normal">Normal in bed</span>
+                <span style="font-size: 10px; color: #38bdf8; font-family: var(--font-mono);">YOLO Enabled</span>
+              </div>
+              <div id="selCvLastCheck" class="cv-feed-meta">Monitored: Feed Active</div>
+              <div style="font-size: 10px; color: var(--text-muted); line-height: 1.3;">
+                Optical surveillance detects fall events, bed occupancy, and abnormal movement in real-time.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 4 & 5. Alert Panel & Actions -->
+      <aside class="alert-panel">
+        <div class="alert-panel-header">
+          <div style="font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);">
+            🚨 Real-Time Alert Center
+          </div>
+          <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="ACTIVE">Active</button>
+            <button class="filter-btn" data-filter="CRITICAL">Critical</button>
+            <button class="filter-btn" data-filter="ALL">All</button>
+            <button class="filter-btn" data-filter="RESOLVED">Resolved</button>
+          </div>
+        </div>
+
+        <!-- Dynamic list of alerts -->
+        <div id="alertList" class="alert-list">
+          <!-- Rendered dynamically by dashboard.js -->
+        </div>
+      </aside>
+
+    </section>
+  </main>
+
+  <!-- ====================================================================
+       8. Prominent Emergency Alert Modal
+       ==================================================================== -->
+  <div id="emergencyModal" class="emergency-modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="emergency-modal">
+      <div class="modal-header">
+        <div class="siren-icon">🚨</div>
+        <div>
+          <div class="modal-title-text">Emergency Alert Triggered</div>
+          <div style="font-size: 12px; color: #fca5a5;">Immediate Nursing Station Action Required</div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-row">
+          <span class="modal-label">Location:</span>
+          <span id="emergencyRoom" class="modal-val">ROOM101 (P001)</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Event Type:</span>
+          <span id="emergencyType" class="modal-val">FALL DETECTED</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Timestamp:</span>
+          <span id="emergencyTime" class="modal-val">12:34:56</span>
+        </div>
+        <div id="emergencyMsg" class="modal-msg">
+          CRITICAL: Possible patient fall detected near bed area!
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="emergencyCloseBtn" class="btn-modal-close">Dismiss</button>
+        <button id="emergencyViewCctvBtn" class="btn-control" style="background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; color: #7dd3fc;">📹 View CCTV Evidence</button>
+        <button id="emergencyAckBtn" class="btn-modal-ack">Acknowledge & Attend Room</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/mockData.js"></script>
+  <script src="js/apiService.js"></script>
+  <script src="js/ecgWaveform.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
