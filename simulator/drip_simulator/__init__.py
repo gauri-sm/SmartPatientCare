@@ -4,10 +4,11 @@ Provides simulation logic, scenario injection, and standardized telemetry genera
 for testing hospital IV drip monitoring without clinical hardware.
 """
 
-from .drip_simulator import IVDripSimulator
+from .drip_simulator import IVDripSimulator, DripSimulationScenario
 from .telemetry_generator import DripTelemetryGenerator
 
 __all__ = [
     "IVDripSimulator",
+    "DripSimulationScenario",
     "DripTelemetryGenerator",
 ]
