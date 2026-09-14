@@ -43,7 +43,7 @@
     },
     "severity": {
       "type": "string",
-      "enum": ["INFO", "WARNING", "CRITICAL"],
+      "enum": ["INFO", "LOW", "MEDIUM", "WARNING", "HIGH", "CRITICAL"],
       "description": "Severity level of the event"
     },
     "message": {

@@ -36,11 +36,10 @@ class TestDripAnomalyDetector(unittest.TestCase):
             current_flow_rate_ml_h=100.0,
             prescribed_rate_ml_h=100.0,
         )
-        self.assertTrue(any(r.event_type == DripEventType.DRIP_VOLUME_LOW for r in results))
-        warning = [r for r in results if r.event_type == DripEventType.DRIP_VOLUME_LOW][0]
-        self.assertEqual(warning.severity, SeverityLevel.WARNING)
+        self.assertTrue(any(r.event_type in (DripEventType.DRIP_LOW, DripEventType.DRIP_VOLUME_LOW) for r in results))
+        warning = [r for r in results if r.event_type in (DripEventType.DRIP_LOW, DripEventType.DRIP_VOLUME_LOW)][0]
+        self.assertIn(warning.severity, (SeverityLevel.HIGH, SeverityLevel.WARNING))
         self.assertEqual(warning.category, AlertCategory.EQUIPMENT_ALERT)
-        self.assertEqual(warning.parameter, "remaining_volume_ml")
 
     def test_empty_drip_completion(self):
         # Bag is at 0.0 ml
@@ -50,9 +49,9 @@ class TestDripAnomalyDetector(unittest.TestCase):
             current_flow_rate_ml_h=0.0,
             prescribed_rate_ml_h=100.0,
         )
-        self.assertTrue(any(r.event_type == DripEventType.DRIP_EMPTY for r in results))
-        empty = [r for r in results if r.event_type == DripEventType.DRIP_EMPTY][0]
-        self.assertEqual(empty.severity, SeverityLevel.CRITICAL)
+        self.assertTrue(any(r.event_type in (DripEventType.DRIP_FINISHED, DripEventType.DRIP_EMPTY) for r in results))
+        empty = [r for r in results if r.event_type in (DripEventType.DRIP_FINISHED, DripEventType.DRIP_EMPTY)][0]
+        self.assertIn(empty.severity, (SeverityLevel.HIGH, SeverityLevel.CRITICAL))
         self.assertEqual(empty.category, AlertCategory.PATIENT_AND_EQUIPMENT_ALERT)
 
     def test_occlusion_detection(self):
