@@ -127,12 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const patient = apiService.patients.find(p => p.patient_id === event.patient_id);
     const mapping = MOCK_DATA.cctvMapping[event.patient_id] || {
-      video: 'videos/room101.mp4',
+      video: 'videos/fall_demo_web.mp4',
       camera: `CAM-${event.room_id || '101'}`
     };
 
     // Determine video source path
-    let videoSrc = event.video_source || mapping.video;
+    let videoSrc = 'videos/fall_demo_web.mp4';
     // Normalize path for web browser
     if (videoSrc.includes('/')) {
       const filename = videoSrc.split('/').pop();
