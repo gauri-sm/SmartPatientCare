@@ -76,3 +76,85 @@ All modules (simulators, CV pipelines, backend, alert engine, and frontend) must
 ## 🚀 Hackathon Guidelines
 
 Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for Git branch naming conventions, workflow instructions, and team collaboration rules.
+
+---
+
+## 💧 IV Drip Monitoring & Simulator (Nifa's Module)
+
+### 📌 Overview
+The IV Drip Monitoring module provides infusion tracking algorithms, flow anomaly detection, lifecycle alert management, and a telemetry simulation engine for hospital nursing stations.
+
+> [!WARNING]
+> **DISCLAIMER: Hackathon Demonstration Prototype Only**
+> This system is designed and built solely for a 2-day hackathon presentation. It is **NOT** a certified medical device, clinical diagnostic tool, or validated infusion controller. All vital signs, fluid mechanics, and sensor readings are simulated.
+
+### ⚙️ Implemented Features
+1. **Mathematical Infusion Engine (`nifa/drip_monitoring/src/drip_calculator.py`)**:
+   - Bi-directional conversion between flow rate (mL/h) and drop frequency (drops/min / gtt/min) across standard drop factors (10, 15, 20, 60 gtt/mL).
+   - Real-time remaining fluid volume and percentage depletion tracking.
+   - Dynamic estimated time to completion (ETA / Run-out time).
+   - Flow rate variance calculation against physician target prescriptions.
+
+2. **Safety Anomaly Detector (`nifa/drip_monitoring/src/anomaly_detector.py`)**:
+   - **`NORMAL`** (INFO): Flow within normal ±10% range.
+   - **`DRIP_VOLUME_LOW`** (WARNING): Fluid volume drops $\le 15\%$ (Equipment Alert).
+   - **`DRIP_RATE_DEVIATION`** (WARNING): Unintended flow variation $\ge 20\%$ (Equipment Alert).
+   - **`DRIP_OCCLUSION`** (CRITICAL): Complete line blockage / kink / closed clamp with fluid remaining (Equipment Alert).
+   - **`DRIP_RUNAWAY`** (CRITICAL): Free-flow over-infusion $> 200\%$ prescribed rate (Patient & Equipment Alert).
+   - **`DRIP_AIR_IN_LINE`** (CRITICAL): Air bubble detected in drip chamber/line (Equipment Alert).
+   - **`DRIP_EMPTY / IV COMPLETED`** (CRITICAL): Bag completely empty (0 mL remaining).
+
+3. **In-App Notification & Alert Manager (`nifa/drip_monitoring/src/alert_manager.py`)**:
+   - Manages alert lifecycle: `ACTIVE` $\rightarrow$ `ACKNOWLEDGED` $\rightarrow$ `RESOLVED`.
+   - Event deduplication and chronologically sorted severity queues.
+   - Generates event payloads strictly conforming to `shared/schemas/event_schema.json`.
+
+4. **Multi-Patient Infusion Coordinator (`nifa/drip_monitoring/src/infusion_manager.py`)**:
+   - Integrates with `shared/mock_data/patients.json` for patients `P001` through `P004`.
+   - Pre-configured with clinical mock prescriptions (Normal Saline, Norepinephrine, Lactated Ringer's, D5W).
+
+5. **Telemetry Simulation Engine (`simulator/drip_simulator/`)**:
+   - Physical IV fluid chamber simulation with time-stepped fluid consumption.
+   - Instant scenario injection for hackathon demonstrations.
+   - `DripTelemetryGenerator`: Validates all outgoing events against JSON Schema via `jsonschema`.
+
+### 🖥️ Interactive Nursing Station Dashboard (`nifa/drip_monitoring/dashboard.py`)
+Built with Streamlit for live demonstration without hospital hardware:
+- Live multi-patient selector (`P001` - `P004`).
+- Visual IV bag level progress bar and fluid depletion indicators.
+- Live telemetry metrics: Flow Rate (mL/h), Drip Rate (gtt/min), Volume Remaining (mL), Run-out ETA.
+- Prominent status banners: `NORMAL`, `WARNING`, `CRITICAL`, `IV COMPLETED`.
+- Alert categorization: `[EQUIPMENT ALERT]` vs `[PATIENT ALERT]`.
+- **Hackathon Demo Control Panel**: 1-click scenario triggers:
+  - 🟢 Normal Infusion (100 mL/h)
+  - 🟡 Low Volume Warning (10% left)
+  - 🔴 Line Occlusion / Blockage (0 mL/h)
+  - 🔴 Runaway Free-Flow (250 mL/h)
+  - ⚠️ Air Bubble in Line
+  - 🟣 IV Completed / Empty Bag (0 mL)
+  - 🔄 Reset Bag (New 500 mL bag)
+- Alert Station with **Acknowledge** and **Resolve** interaction.
+- Live event inspection with strict schema validation badge.
+
+### 🚀 How to Run & Demo
+
+#### 1. Run Unit Tests (36 Tests)
+```bash
+python -m unittest discover -s nifa/drip_monitoring/tests -v
+```
+
+#### 2. Run Headless Simulator CLI
+```bash
+# Automated multi-scenario demo
+python -m simulator.drip_simulator.cli --demo
+
+# Specific scenario
+python -m simulator.drip_simulator.cli --patient P001 --scenario CRITICAL_OCCLUSION
+```
+
+#### 3. Launch Interactive Nursing Station Dashboard
+```bash
+streamlit run nifa/drip_monitoring/dashboard.py
+```
+Open your browser at `http://localhost:8501`.
+
