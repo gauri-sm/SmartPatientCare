@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartPatientCare — Central Nursing Station Monitor</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Medical Disclaimer Banner -->
+  <div class="disclaimer-banner" role="alert">
+    <div class="disclaimer-content">
+      <span class="disclaimer-icon">⚠️</span>
+      <span class="disclaimer-text">
+        <strong>MEDICAL DISCLAIMER:</strong> Prototype for hackathon demonstration only. Not medically validated and not intended for clinical decision-making.
+      </span>
+      <span class="disclaimer-badge">DEMO PROTOTYPE</span>
+    </div>
+  </div>
+
+  <!-- Main App Container -->
+  <div class="app-layout">
+    
+    <!-- Top Station Header -->
+    <header class="station-header">
+      <div class="header-branding">
+        <div class="logo-mark">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2v20M2 12h20"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="station-title">SmartPatientCare</h1>
+          <span class="station-subtitle">ICU & Step-Down Central Telemetry Console • Ward 3B</span>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="connection-pill" id="connectionPill">
+          <span class="status-dot online"></span>
+          <span id="connectionLabel">LIVE TELEMETRY</span>
+        </div>
+
+        <div class="clock-badge">
+          <span class="clock-label">STATION TIME</span>
+          <span id="clockDisplay" class="clock-digits">--:--:-- UTC</span>
+        </div>
+
+        <button id="soundToggleBtn" class="action-btn icon-btn" title="Toggle Alert Sound" aria-label="Toggle Alert Sound">
+          <span id="soundIcon">🔔</span>
+        </button>
+
+        <button id="refreshBtn" class="action-btn secondary-btn" title="Force Refresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+          </svg>
+          Sync
+        </button>
+      </div>
+    </header>
+
+    <!-- Hackathon Demo Simulation Control Toolbar -->
+    <section class="simulation-toolbar" aria-label="Hackathon Simulation Controls">
+      <div class="toolbar-header">
+        <div class="toolbar-title">
+          <span class="pulse-indicator"></span>
+          <strong>SANDRA CLINICAL SCENARIO SIMULATOR</strong>
+          <span class="toolbar-hint">(Click any scenario to inject telemetry into the rules & alert engine)</span>
+        </div>
+        <div class="patient-select-wrap">
+          <label for="targetPatientSelect">Target Patient:</label>
+          <select id="targetPatientSelect" class="patient-dropdown">
+            <option value="">Auto (Default Scenario Patient)</option>
+            <option value="P001">P001 - Eleanor Vance (ROOM101)</option>
+            <option value="P002">P002 - Marcus Brody (ROOM102)</option>
+            <option value="P003">P003 - Amina Al-Mansoor (ROOM103)</option>
+            <option value="P004">P004 - David Sterling (ROOM104)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="scenario-buttons-grid">
+        <button class="sim-btn success" data-scenario="NORMAL_BASELINE" title="Restore stable baseline vitals">
+          <span class="sim-icon">💚</span> Normal Baseline
+        </button>
+        <button class="sim-btn critical" data-scenario="LOW_SPO2" title="Trigger critical hypoxia (SpO2 82%)">
+          <span class="sim-icon">🫁</span> Critical Low SpO2
+        </button>
+        <button class="sim-btn critical" data-scenario="HIGH_HEART_RATE" title="Trigger severe tachycardia (HR 155 bpm)">
+          <span class="sim-icon">⚡</span> High Heart Rate
+        </button>
+        <button class="sim-btn warning" data-scenario="LOW_HEART_RATE" title="Trigger severe bradycardia (HR 42 bpm)">
+          <span class="sim-icon">📉</span> Low Heart Rate
+        </button>
+        <button class="sim-btn critical" data-scenario="HYPERTENSIVE_CRISIS" title="Trigger hypertensive crisis (188/118 mmHg)">
+          <span class="sim-icon">🩸</span> Hypertensive Crisis
+        </button>
+        <button class="sim-btn critical" data-scenario="HIGH_TEMPERATURE" title="Trigger hyperthermia / sepsis (39.8 °C)">
+          <span class="sim-icon">🌡️</span> High Temp (Fever)
+        </button>
+        <button class="sim-btn warning" data-scenario="DRIP_LOW" title="Trigger IV drip low reservoir (35 ml)">
+          <span class="sim-icon">💧</span> IV Drip Low
+        </button>
+        <button class="sim-btn critical" data-scenario="DRIP_FINISHED" title="Trigger IV drip empty / occlusion (0 ml)">
+          <span class="sim-icon">🚫</span> IV Drip Finished
+        </button>
+        <button class="sim-btn critical" data-scenario="ECG_ARRHYTHMIA" title="Trigger lethal Ventricular Fibrillation">
+          <span class="sim-icon">📈</span> ECG Arrhythmia (V-Fib)
+        </button>
+        <button class="sim-btn emergency" data-scenario="MULTI_PATIENT_CRISIS" title="Simultaneous Code Blue crisis across all rooms">
+          <span class="sim-icon">🚨</span> Code Blue (All Rooms)
+        </button>
+      </div>
+    </section>
+
+    <!-- KPI Metric Summary Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card" id="kpiTotal">
+        <div class="kpi-icon total">👥</div>
+        <div class="kpi-info">
+          <span class="kpi-label">TOTAL MONITORED</span>
+          <span class="kpi-value" id="valTotalPatients">4</span>
+        </div>
+        <div class="kpi-sub">Beds 101 - 104 Active</div>
+      </div>
+
+      <div class="kpi-card" id="kpiStable">
+        <div class="kpi-icon stable">✓</div>
+        <div class="kpi-info">
+          <span class="kpi-label">STABLE PATIENTS</span>
+          <span class="kpi-value text-success" id="valStablePatients">4</span>
+        </div>
+        <div class="kpi-sub">Within standard bounds</div>
+      </div>
+
+      <div class="kpi-card" id="kpiAttention">
+        <div class="kpi-icon attention">⚠️</div>
+        <div class="kpi-info">
+          <span class="kpi-label">ATTENTION NEEDED</span>
+          <span class="kpi-value text-warning" id="valAttentionPatients">0</span>
+        </div>
+        <div class="kpi-sub">Warning threshold triggers</div>
+      </div>
+
+      <div class="kpi-card" id="kpiCritical">
+        <div class="kpi-icon critical">🚨</div>
+        <div class="kpi-info">
+          <span class="kpi-label">CRITICAL ALERTS</span>
+          <span class="kpi-value text-critical" id="valCriticalAlerts">0</span>
+        </div>
+        <div class="kpi-sub" id="criticalSub">Immediate intervention required</div>
+      </div>
+
+      <div class="kpi-card" id="kpiSync">
+        <div class="kpi-icon sync">⏱️</div>
+        <div class="kpi-info">
+          <span class="kpi-label">TELEMETRY SYNC</span>
+          <span class="kpi-value text-neutral" id="valLastSync">Just now</span>
+        </div>
+        <div class="kpi-sub">Real-time WebSocket active</div>
+      </div>
+    </section>
+
+    <!-- Main Workspace: Patients Grid + Live Priority Alert Feed -->
+    <main class="main-dashboard-grid">
+      
+      <!-- Left Column: Patient Cards -->
+      <section class="patients-section">
+        <div class="section-title-bar">
+          <h2>
+            <span class="section-badge">BEDSIDE</span>
+            Patient Monitoring Cards
+          </h2>
+          <span class="patient-count-badge" id="patientSectionCount">4 Beds Active</span>
+        </div>
+
+        <div class="patient-cards-container" id="patientCardsGrid">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </section>
+
+      <!-- Right Column: Priority Alert Feed -->
+      <aside class="alerts-section">
+        <div class="section-title-bar">
+          <h2>
+            <span class="section-badge red">PRIORITY QUEUE</span>
+            Clinical Alerts
+          </h2>
+          <div class="alert-filter-pills">
+            <button class="filter-pill active" data-filter="ACTIVE">Active</button>
+            <button class="filter-pill" data-filter="ACKNOWLEDGED">Ack</button>
+            <button class="filter-pill" data-filter="RESOLVED">Resolved</button>
+            <button class="filter-pill" data-filter="ALL">All</button>
+          </div>
+        </div>
+
+        <div class="alerts-container" id="alertsList">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </aside>
+
+    </main>
+
+  </div>
+
+  <!-- Patient Detail Deep-Dive Modal -->
+  <div class="modal-backdrop" id="patientModal" style="display: none;" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      
+      <div class="modal-header">
+        <div class="modal-patient-info">
+          <span class="modal-room-tag" id="modalRoomTag">ROOM 101</span>
+          <h2 id="modalPatientName">Eleanor Vance</h2>
+          <span class="modal-demographics" id="modalDemographics">72 yrs • Female • Post-operative recovery</span>
+        </div>
+        <button class="modal-close-btn" id="closeModalBtn" aria-label="Close details">✕</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Clinical Overview & Personnel -->
+        <div class="modal-meta-bar">
+          <div class="meta-item">
+            <span class="meta-label">Patient ID</span>
+            <span class="meta-value" id="modalPatientId">P001</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Physician</span>
+            <span class="meta-value" id="modalDoctor">Dr. Sarah Chen</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Assigned Nurse</span>
+            <span class="meta-value" id="modalNurse">Nurse Alex Taylor</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Patient Status</span>
+            <span class="status-badge" id="modalStatusBadge">Stable</span>
+          </div>
+        </div>
+
+        <!-- Connected Medical Devices -->
+        <div class="connected-devices-row">
+          <span class="devices-label">Connected Bedside Hardware:</span>
+          <div class="devices-tags-list" id="modalDevicesList">
+            <!-- Hardware badges -->
+          </div>
+        </div>
+
+        <!-- High-Resolution Live Vitals Grid -->
+        <div class="modal-section-title">Telemetry Parameter Breakdown & Threshold Checks</div>
+        <div class="modal-vitals-grid" id="modalVitalsGrid">
+          <!-- Detailed vital parameter boxes -->
+        </div>
+
+        <!-- Real-Time Waveform Displays -->
+        <div class="waveforms-container">
+          <div class="waveform-box">
+            <div class="waveform-header">
+              <span class="waveform-title">Lead II Bedside ECG Rhythm</span>
+              <span class="waveform-tag" id="modalEcgTag">NORMAL SINUS RHYTHM</span>
+            </div>
+            <canvas id="ecgCanvas" width="550" height="110" class="ecg-canvas"></canvas>
+          </div>
+
+          <div class="waveform-box">
+            <div class="waveform-header">
+              <span class="waveform-title">Continuous Trend (Heart Rate / SpO2)</span>
+              <span class="waveform-tag">LIVE TELEMETRY WINDOW</span>
+            </div>
+            <canvas id="trendCanvas" width="550" height="110" class="trend-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- IV Drip & Infusion Diagnostics -->
+        <div class="drip-diagnostic-panel" id="modalDripPanel">
+          <div class="drip-panel-header">
+            <strong>Infusion System (IV Drip Sensor)</strong>
+            <span id="modalDripStatusTag" class="badge-normal">FLOW ADEQUATE</span>
+          </div>
+          <div class="drip-meter-bar">
+            <div class="drip-level-fill" id="modalDripBar" style="width: 85%;"></div>
+          </div>
+          <div class="drip-metrics-row">
+            <div>Volume Remaining: <strong id="modalDripVolume">450 ml</strong></div>
+            <div>Infusion Rate: <strong id="modalDripRate">100 ml/h</strong></div>
+            <div>Time Remaining: <strong id="modalDripEstTime">~4.5 hrs</strong></div>
+          </div>
+        </div>
+
+        <!-- Patient-Specific Alert History -->
+        <div class="modal-section-title">Patient Alert & Event History Timeline</div>
+        <div class="modal-history-list" id="modalAlertHistory">
+          <!-- Populated by app.js -->
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-quick-actions">
+          <span>Quick Patient Scenario:</span>
+          <button class="mini-btn red" id="quickTriggerSpO2">Trigger Low SpO2</button>
+          <button class="mini-btn orange" id="quickTriggerDrip">Trigger Drip Low</button>
+          <button class="mini-btn green" id="quickTriggerNormal">Restore Normal</button>
+        </div>
+        <button class="action-btn secondary-btn" id="modalDoneBtn">Close Dossier</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
