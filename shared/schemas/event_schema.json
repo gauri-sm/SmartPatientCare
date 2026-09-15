@@ -43,7 +43,7 @@
     },
     "severity": {
       "type": "string",
-      "enum": ["INFO", "WARNING", "CRITICAL"],
+      "enum": ["INFO", "LOW", "MEDIUM", "WARNING", "HIGH", "CRITICAL"],
       "description": "Severity level of the event"
     },
     "message": {
@@ -54,6 +54,18 @@
       "type": "string",
       "enum": ["ACTIVE", "ACKNOWLEDGED", "RESOLVED"],
       "description": "Current lifecycle status of the event or alert"
+    },
+    "video_source": {
+      "type": "string",
+      "description": "Optional video file path or stream URI for CCTV events"
+    },
+    "camera_id": {
+      "type": "string",
+      "description": "Optional identifier for CCTV camera"
+    },
+    "evidence_type": {
+      "type": "string",
+      "description": "Optional evidence classification for CCTV events"
     }
   },
   "required": [
@@ -70,5 +82,5 @@
     "message",
     "status"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }
